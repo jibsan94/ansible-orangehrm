@@ -1,0 +1,36 @@
+---
+__apache_packages:
+  - apache2 
+  - apache2-data  
+  - libaio1 
+  - libapr1 
+  - libaprutil1 
+  - libdbd-mysql-perl 
+  - libdbi-perl 
+  - libhtml-template-perl 
+  - libterm-readkey-perl 
+  - libwrap0 
+  - tcpd 
+
+__php_packages:
+  - php{{ php_version }}
+  - php{{ php_version }}-cli 
+  - php{{ php_version }}-common 
+  - php-json 
+  - php{{ php_version }}-mysql 
+  - php{{ php_version }}-readline 
+
+__mariadb_packages:
+  - mariadb-server
+  - python3-mysqldb
+
+__unzip_packages:
+  - unzip
+
+__apache_extra_packages:
+  - php-curl
+  - php-xml 
+  - php-zip 
+  - php-intl 
+  - php-gd 
+  - php-ldap

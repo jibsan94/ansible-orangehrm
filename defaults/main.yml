@@ -1,0 +1,21 @@
+---
+#OS Environment packages state `latest` for install the latest version
+packages_state: latest
+
+#Apache2 service
+apache_daemon: apache2
+apache_action: restarted
+
+#PHP
+php_version: 8.1
+
+#MySQL
+mysql_root_new_password: joy123
+mysql_user: orangehrm
+mysql_user_password: SK.2024
+mysql_orange_db: orangehrm_db
+
+#OrangeHRM
+orange_web_server_path: /var/www/html
+admin_email: admin@skijah.com
+orange_domain_name: rrhh.skijah.com

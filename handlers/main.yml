@@ -1,0 +1,9 @@
+---
+# - name: service apache2
+#   service: "name={{ apache_daemon }} state={{ apache_daemon_state }} enabled=yes"
+#   tags: apache2
+
+- name: Reload Apache2
+  service:
+    name: apache2
+    state: reloaded

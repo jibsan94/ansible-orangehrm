@@ -1,0 +1,154 @@
+---
+- name: Update apt cache
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: Install Apache2 packages
+  apt: "name={{ apache_packages }} state={{ packages_state }}"
+  notify: Reload Apache2
+
+- name: Restart Apache2 service
+  service: "name={{ apache_daemon }} state={{ apache_action }} enabled=yes"
+  tags: apache2
+
+- name: Install PHP packages
+  apt: "name={{ php_packages }} state={{ packages_state }}"
+
+- name: Restart Apache2 service
+  service: "name={{ apache_daemon }} state={{ apache_action }} enabled=yes"
+  tags: apache2
+
+- name: Install MariaDB packages
+  apt: "name={{ mariadb_packages }} state={{ packages_state }}"
+
+- name: Set root user password
+  mysql_user: name=root
+              host=localhost
+              password="{{ mysql_root_new_password }}"
+              check_implicit_admin=yes
+              login_user=root
+              login_password=""
+              state=present
+
+- name: Remove anonymous users, disallow root login remotely, remove test database
+  mysql_user:
+    name: ""
+    host: "{{ item }}"
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_new_password }}"
+  loop:
+    - "localhost"
+    - "{{ ansible_default_ipv4.address }}"
+    - "%"
+
+- name: Remove the test database
+  mysql_db:
+    name: "test"
+    state: absent
+    login_user: root
+    login_password: "{{ mysql_root_new_password }}"
+
+- name: Create a new database with name 'orangehrm_db'
+  community.mysql.mysql_db:
+    login_user: root
+    login_password: "{{ mysql_root_new_password }}"
+    name: "{{ mysql_orange_db }}"
+    state: present
+
+- name: Create database user with password and all database privileges and 'WITH GRANT OPTION'
+  community.mysql.mysql_user:
+    login_user: root
+    login_password: "{{ mysql_root_new_password }}"
+    name: "{{ mysql_user }}"
+    password: "{{ mysql_user_password }}"
+    priv: '{{ mysql_orange_db }}.*:ALL,GRANT'
+    state: present
+    session_vars:
+      wsrep_on: off
+
+- name: Download OrangeHRM 5.6
+  ansible.builtin.get_url:
+    url: https://excellmedia.dl.sourceforge.net/project/orangehrm/stable/5.6/orangehrm-5.6.zip
+    dest: /opt
+    mode: '0660'
+
+- name: Install Unzip packages
+  apt: "name={{ __unzip_packages }} state={{ packages_state }}"
+
+- name: Extract OrangeHRM into /var/www/html
+  ansible.builtin.unarchive:
+    src: /opt/orangehrm-5.6.zip
+    dest: "{{ orange_web_server_path }}"
+    remote_src: yes
+
+- name: Remove unnecesary files
+  ansible.builtin.file:
+    path: "{{ orange_web_server_path }}/orangehrm-quick-start-guide.html"
+    state: absent
+
+- name: Remove unnecesary files
+  ansible.builtin.file:
+    path: "{{ orange_web_server_path }}/logo.png"
+    state: absent
+
+- name: Rename Orange folder
+  command: mv /var/www/html/orangehrm-5.6 /var/www/html/orangehrm
+
+- name: Change Ownership
+  command: chown -R www-data:www-data /var/www/html/orangehrm
+
+- name: Add permissions
+  command: chmod -R 777 /var/www/html/orangehrm
+
+- name: Setup site configuration
+  ansible.builtin.template:
+    src: orangehrm.conf.j2
+    dest: /etc/apache2/sites-available/orangehrm.conf
+    mode: '0666'
+
+- name: Dissable default site
+  command: a2dissite 000-default.conf
+
+- name: Dissable default site
+  command: a2ensite orangehrm.conf
+
+- name: Restart Apache2 service
+  service: "name={{ apache_daemon }} state={{ apache_action }} enabled=yes"
+  tags: apache2
+
+- name: Install extra packages
+  apt: "name={{ __apache_extra_packages }} state={{ packages_state }}"
+
+- name: Add curl extension
+  ansible.builtin.lineinfile:
+    path: /etc/php/8.1/cli/php.ini
+    line: extension=curl
+
+- name: Add simplexml extension
+  ansible.builtin.lineinfile:
+    path: /etc/php/8.1/cli/php.ini
+    line: extension=simplexml
+
+- name: Add zip extension
+  ansible.builtin.lineinfile:
+    path: /etc/php/8.1/cli/php.ini
+    line: extension=zip
+
+- name: Add intl extension
+  ansible.builtin.lineinfile:
+    path: /etc/php/8.1/cli/php.ini
+    line: extension=intl
+
+- name: Add gd extension
+  ansible.builtin.lineinfile:
+    path: /etc/php/8.1/cli/php.ini
+    line: extension=gd
+
+- name: Add ldap extension
+  ansible.builtin.lineinfile:
+    path: /etc/php/8.1/cli/php.ini
+    line: extension=ldap
+
+- name: Restart Apache2 service
+  service: "name={{ apache_daemon }} state={{ apache_action }} enabled=yes"
+  tags: apache2

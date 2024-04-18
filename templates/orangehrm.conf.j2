@@ -1,0 +1,12 @@
+<VirtualHost *:80>
+ServerAdmin {{ admin_email }}
+ServerName {{ orange_domain_name }}
+DocumentRoot /var/www/html/orangehrm
+<Directory /var/www/html/orangehrm>
+Options -Indexes +FollowSymLinks +MultiViews
+AllowOverride All
+Require all granted
+</Directory>
+ErrorLog ${APACHE_LOG_DIR}/orangehrm-error.log
+CustomLog ${APACHE_LOG_DIR}/orangehrm-access.log combined
+</VirtualHost>
