@@ -35,7 +35,7 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: webservers
       roles:
-         - jibsan94.ansible_orangehrm
+         - jibsan94.ansible_orangehrm (this is if you are going to run the role from **Ansible Galaxy**)
 
 License
 -------
